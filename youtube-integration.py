@@ -9,14 +9,14 @@ api_service_name = "youtube"
 api_version = "v3"
 DEVELOPER_KEY = os.getenv('DEVELOPER_KEY')
 
-youtube = googleapiclient.discovery.build(api_service_name, api_version, DEVELOPER_KEY)
+youtube = googleapiclient.discovery.build(api_service_name, api_version, developerKey = DEVELOPER_KEY)
 
-async def songRequest(q):
+def songRequest(name):
 # Search for a video
     request = youtube.search().list(
         part="id,snippet",
         type='video',
-        q='',
+        q=name,
         videoDefinition='high',
         maxResults=1,
         fields="items(id(videoId),snippet(publishedAt,channelId,channelTitle,title,description))"
