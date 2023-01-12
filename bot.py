@@ -1,11 +1,13 @@
 import os
-import vlc
 import discord
 import pafy
+from youtube_dl import YoutubeDL
 
 from dotenv import load_dotenv
 from discord.ext import commands
+from discord.utils import get
 from youtubeIntegration import songRequest
+#from requests import get
 
 #load discord bot token from environment variable
 load_dotenv()
@@ -20,45 +22,54 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 @bot.command(name = 'play', help = "Search youtube for the phrase given, play first result")
 async def play(ctx, song):
 
-    #get author voice channel
-    voiceChannel = ctx.author.voice.channel
-
-    #check that author voice channel exists
-    if voiceChannel is None:
+    #check that author voice channel exists 
+    if ctx.author.voice is None:
         await ctx.send("Please join a voice channel first!")
+        print("User attempted play when not in voice channel")
         return
+    else:
+        voiceChannel = ctx.author.voice.channel
 
+    #check if bot is already in a voice channel, join author voice channel if not
+    botVoice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+    if botVoice and botVoice.is_connected():
+        await botVoice.move_to(voiceChannel)
+    else:
+        botVoice = await voiceChannel.connect() 
+
+    #get youtube video information
     video = songRequest(song)
+
+    #inform user what song is playing
     await ctx.send("Now playing: " + video["items"][0]["snippet"]["title"])
-    ''' 
-    videourl = pafy.new("https://www.youtube.com/watch?v=" + video["items"][0]["id"]["videoId"])
-    best = videourl.getbest()
-    playurl = best.url '''
-
+    
+    #use pafy to get audio only stream of youtube video
     link = ("https://www.youtube.com/watch?v=" + video["items"][0]["id"]["videoId"])
+    pafyVideo = pafy.new(link)
+    stream = pafyVideo.getbestaudio()
 
-    ''' Instance = vlc.Instance()
-    player = Instance.media_player_new()
-    Media = Instance.media_new("https://www.youtube.com/watch?v=" + video["items"][0]["id"]["videoId"])
-    Media.get_mrl()
-    player.set_media(Media)
-    player.play() '''
-
-    media = vlc.MediaPlayer(link)
-    media.play()
+    #play video audio over voice channel
+    FFMPEG_OPTS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+    botVoice.play(discord.FFmpegPCMAudio(stream.url, **FFMPEG_OPTS), after=lambda e: print('done', e))
+    botVoice.is_playing()
 
 @bot.command(name = 'playUrl', help = "Play the given url")
 async def playUrl(ctx, url):
 
-    #get author voice channel
-    voiceChannel = ctx.author.voice.channel
-
-    #check that author voice channel exists
-    if voiceChannel is None:
+    #check that author voice channel exists 
+    if ctx.author.voice is None:
         await ctx.send("Please join a voice channel first!")
+        print("User attempted play when not in voice channel")
         return
+    else:
+        voiceChannel = ctx.author.voice.channel
 
-    s
+    #check if bot is already in a voice channel, join author voice channel if not
+    botVoice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+    if botVoice and botVoice.is_connected():
+        await botVoice.move_to(voiceChannel)
+    else:
+        botVoice = await voiceChannel.connect() 
 
 #start bot
 bot.run(TOKEN)
