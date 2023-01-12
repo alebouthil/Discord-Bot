@@ -22,4 +22,6 @@ def songRequest(name):
         fields="items(id(videoId),snippet(publishedAt,channelId,channelTitle,title,description))"
     )
     response = request.execute()
+    print("fetching video: " + response["items"][0]["id"]["videoId"])
     return response
+
