@@ -122,7 +122,7 @@ async def stop(ctx):
     #deletes queue
     playlist = []
 
-@bot.command(name = "skip", help = "skips current song and moves to next in queue", aliases = ["next"])
+@bot.command(name = "skip", help = "skips current song and moves to next in queu. Aliases: !next", aliases = ["next"])
 async def skip(ctx):
 
     botVoice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
