@@ -1,3 +1,4 @@
+from ast import alias
 import os
 import discord
 import pafy
@@ -23,7 +24,6 @@ FFMPEG_OPTS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
-#initialize playlist queue
 playlist = []
 
 @bot.command(name = 'play', help = "Search youtube for the phrase given, play first result")
@@ -46,8 +46,7 @@ async def play(ctx,*, song):
 
     #get youtube video information
     video = songRequest(song)
-    
-    #log video information
+
     print(video)
     
     #use pafy to get audio only stream of youtube video
@@ -55,21 +54,18 @@ async def play(ctx,*, song):
     pafyVideo = pafy.new(link)
     stream = pafyVideo.getbestaudio()
 
-    #add request to playlist if a song is already playing
     if (botVoice.is_playing()):
         print("queuing new song")
         playlist.append((video, stream))
         await ctx.send("Added " + video["items"][0]["snippet"]["title"] + " to queue")
-        
-    else
-        #play video audio over voice channel
-        botVoice.play(discord.FFmpegPCMAudio(stream.url, **FFMPEG_OPTS), after=lambda e: print('done', e))
-        botVoice.is_playing()
 
-        #inform user what song is playing
-        await ctx.send("Now playing: " + video["items"][0]["snippet"]["title"])
+    #play video audio over voice channel
+    botVoice.play(discord.FFmpegPCMAudio(stream.url, **FFMPEG_OPTS), after=lambda e: print('done', e))
+    botVoice.is_playing()
 
-    #call to aux function for playlist support
+    #inform user what song is playing
+    await ctx.send("Now playing: " + video["items"][0]["snippet"]["title"])
+
     await playNext(ctx, botVoice)
 
 @bot.command(name = 'playUrl', help = "Play the given url")
@@ -100,14 +96,13 @@ async def playUrl(ctx, url):
         print("queuing new song")
         playlist.append((video, stream))
         await ctx.send("Added " + video["items"][0]["snippet"]["title"] + " to queue")
-    
-    else
-        #play video audio over voice channel
-        botVoice.play(discord.FFmpegPCMAudio(stream.url, **FFMPEG_OPTS), after=lambda e: print('done', e))
-        botVoice.is_playing()
 
-        #inform user what song is playing
-        await ctx.send("Now playing: " + video["items"][0]["snippet"]["title"])
+    #play video audio over voice channel
+    botVoice.play(discord.FFmpegPCMAudio(stream.url, **FFMPEG_OPTS), after=lambda e: print('done', e))
+    botVoice.is_playing()
+
+    #inform user what song is playing
+    await ctx.send("Now playing: " + video["items"][0]["snippet"]["title"])
 
     await playNext(ctx, botVoice)
 
@@ -127,7 +122,7 @@ async def stop(ctx):
     #deletes queue
     playlist = []
 
-@bot.command(name = "skip", help = "skips current song and moves to next in queue")
+@bot.command(name = "skip", help = "skips current song and moves to next in queu. Aliases: !next", aliases = ["next"])
 async def skip(ctx):
 
     botVoice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
