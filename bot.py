@@ -68,15 +68,15 @@ async def queueUrl(song, ctx):
     #extract audio stream from youtube link
     pafyVideo = pafy.new(song)
     stream = pafyVideo.getbestaudio()
-    video = {'items': [{'id': {'videoId': 'fecSD7CgxAI'}, 'snippet': {'publishedAt': '2023-01-23T07:43:18Z', 'channelId': 'UCeZoKzVi_FCb9a-96XqU5iQ', 'title': song, 'description': 'countrymusic #countrynews #topcountrysongs Top 100 Country Songs of 2023  Chris Lane, Morgan Wallen, Luke Combs, Chris ...', 'channelTitle': 'Country Music Collection'}}]}
     duration = pafyVideo.length
+    title = pafyVideo.title
 
     print("Queued Url: " + song)
 
     #add video information and stream to playlist queue
-    playlist.append((song, stream, duration))
+    playlist.append((title, stream, duration))
 
-    await ctx.send("Added " + song + " to queue")
+    await ctx.send("Added " + title + " to queue")
 
 async def queueString(song, ctx):
 #auxillary function to queue song from a search term
